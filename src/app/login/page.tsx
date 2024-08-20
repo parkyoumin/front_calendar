@@ -1,5 +1,9 @@
+"use client";
+
+import { signIn } from "next-auth/react";
+
 const page = () => {
-  return <div>로그인</div>;
+  return <button onClick={() => signIn("google")}>로그인</button>;
 };
 
 export default page;
