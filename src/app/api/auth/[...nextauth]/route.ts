@@ -10,22 +10,29 @@ export const authOptions = {
     }),
   ],
   callbacks: {
-    signIn: async ({ user }: any) => {
-      if (!user || !user.email) {
+    signIn: async ({ user, account }: any) => {
+      if (!account || !account.providerAccountId) {
         return false;
       }
 
-      const getUserResponse = await get("/user", {
-        params: { email: user.email },
+      const isUser = await get("/user/is", {
+        params: { providerAccountId: account.providerAccountId },
       });
 
-      if (getUserResponse.data === false) {
-        const data = { email: user.email, name: user.name };
-        const signUpResponse = await post("/user", data);
+      if (isUser.data === false) {
+        const data = {
+          providerAccountId: account.providerAccountId,
+          email: user.email,
+          name: user.name,
+        };
+        const signUpResponse = await post("/auth/signup", data);
 
         console.log(signUpResponse);
       } else {
-        console.log("로그인 성공");
+        const data = { providerAccountId: account.providerAccountId };
+        const loginResponse = await post("/auth/login", data);
+
+        console.log(loginResponse);
       }
       return true;
     },

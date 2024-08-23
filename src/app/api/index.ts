@@ -2,16 +2,13 @@ import axios, { AxiosRequestConfig } from "axios";
 import isEmpty from "@/app/utils/validator";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-// const accessToken = localStorage.getItem("access_token");
-// const axiosInstance = axios.create({
-//   baseURL: apiUrl,
-//   headers: { Authorization: accessToken },
-// });
-
 const axiosInstance = axios.create({
   baseURL: apiUrl,
+  headers: {
+    Authorization:
+      "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm92aWRlckFjY291bnRJZCI6IjEwNDI5MjI4NTQ1ODA0NzQyNDg2OCIsImlhdCI6MTcyNDQxOTc3MSwiZXhwIjoxNzI0NDIzMzcxfQ.RPFneQa8FkwqFfxX1kqmN1RXSU_8vCvw4Kvd5iXVs5c",
+  },
 });
-
 export interface CommonResponse {
   status: number;
   comment?: string;
@@ -26,6 +23,8 @@ const get = async (
   return await axiosInstance
     .get(url, config)
     .then((response) => {
+      console.log(response);
+
       if (response.data.status >= 200 && response.data.status < 400) {
         getData.status = response.data.status;
         getData.data = response.data.data;
