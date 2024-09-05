@@ -1,23 +1,24 @@
-"use client";
+import { cookies } from "next/headers";
+import { get } from "../../api";
 
-import { signIn } from "next-auth/react";
-import { get } from "../api";
+const getUser = async () => {
+  const cookieStore = cookies();
+  const providerAccountId = cookieStore.get("provider_account_id")?.value;
 
-const page = () => {
-  const getUser = async () => {
-    const user = await get("/user", {
-      params: { providerAccountId: "104292285458047424868" },
-    });
+  return await get("/user", {
+    params: {
+      providerAccountId,
+    },
+  });
+};
 
-    console.log(user);
-  };
+const page = async () => {
+  const user = await getUser();
+  console.log(user);
 
   return (
     <>
-      <div>
-        <button onClick={() => signIn("google")}>로그인</button>
-        <button onClick={() => getUser()}>유저정보</button>
-      </div>
+      <a href="http://localhost:3001/auth/google">login</a>
     </>
   );
 };
