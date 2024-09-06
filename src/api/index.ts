@@ -1,19 +1,9 @@
 import axios, { AxiosRequestConfig } from "axios";
 import isEmpty from "@/utils/validator";
-import { cookies, headers } from "next/headers";
-import Cookies from "js-cookie";
-
-const cookieStore = cookies();
-const accessToken = "Bearer " + cookieStore.get("access_token")?.value;
-const refreshToken = cookieStore.get("refresh_token")?.value;
-const providerAccountId = cookieStore.get("provider_account_id")?.value;
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 const axiosInstance = axios.create({
   baseURL: apiUrl,
-  headers: {
-    Authorization: accessToken,
-  },
   withCredentials: true,
 });
 
@@ -25,20 +15,21 @@ export interface CommonResponse {
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response.status === 401) {
-      const data = {
-        refreshToken,
-        providerAccountId,
-      };
-      const refreshResponse = await post("/auth/refresh", data);
-      console.log(refreshResponse.data);
+    if (error.response.status === 401 && typeof window !== "undefined") {
+      try {
+        const refreshResponse = await get("/auth/refresh");
+        console.log(refreshResponse);
 
-      const newAccessToken = refreshResponse.data.accessToken;
-      const newRefreshToken = refreshResponse.data.refreshToken;
-
-      error.config.headers.Authorization = `Bearer ${newAccessToken}`;
-
-      return axiosInstance(error.config);
+        switch (refreshResponse.status) {
+          case 200:
+            return axiosInstance(error.config);
+          default:
+            window.location.href = "/have-to-login";
+            break;
+        }
+      } catch (error) {
+        console.log(error);
+      }
     }
 
     return Promise.reject(error);
@@ -79,23 +70,6 @@ const post = async (
     .post(url, data, config)
     .then((response) => {
       if (response.data.status >= 200 && response.data.status < 400) {
-        // ssr cookie set
-        if (typeof window === "undefined") {
-          let accessToken = "";
-          let refreshToken = "";
-          response.headers["set-cookie"]?.forEach((cookieString) => {
-            if (cookieString.startsWith("access_token=")) {
-              accessToken = cookieString.split(";")[0].split("=")[1];
-            }
-            if (cookieString.startsWith("refresh_token=")) {
-              refreshToken = cookieString.split(";")[0].split("=")[1];
-            }
-          });
-          console.log(accessToken);
-
-          Cookies.set("access_token", accessToken);
-        }
-
         getData.status = response.data.status;
         getData.data = response.data.data;
         return getData;
