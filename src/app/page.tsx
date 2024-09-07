@@ -1,13 +1,15 @@
-import { redirect } from "next/navigation";
+import Aside from "@/components/Aside";
+import Calendar from "@/components/Calendar";
+import Header from "@/components/Header";
 
 export default function Home() {
-  // 로그인 상태 fetch 후
-
-  const isLogin = false;
-
-  if (isLogin) {
-    redirect("/home");
-  } else {
-    redirect("/login");
-  }
+  return (
+    <>
+      <Header />
+      <div className="flex m-8" style={{ height: "calc(100vh - 8rem)" }}>
+        <Aside />
+        <Calendar />
+      </div>
+    </>
+  );
 }
